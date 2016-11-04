@@ -1,5 +1,5 @@
 import os
-import environments
+import tasks
 import modelzoo
 import agents
 from analysis import Analysis
@@ -13,12 +13,12 @@ test_iter = 1*10**3 # number of test iterations
 ###########
 # Environment specification
 
-env = environments.ProbabilisticCategorization()
+task = tasks.ProbabilisticCategorization()
 
 ###########
 # Model specification
 
-model = modelzoo.RNN_Elman(env.ninput, 5, env.noutput)
+model = modelzoo.RNN_Elman(task.ninput, 5, task.noutput)
 
 ##########
 # Agent specification
@@ -28,28 +28,28 @@ agent = agents.Advantage_Actor_Critic(model)
 ###########
 # Train agent on an environment
 
-result = agent.learn(env, train_iter)
+result = agent.learn(task, train_iter)
 
 ###########
 # Analyse training behaviour
 
-fname = 'learn_probabilistic_categorization'
+fname = 'figures/learn_probabilistic_categorization'
 
-analysis = Analysis(fname, env, agent)
+analysis = Analysis(fname, task, agent)
 
 analysis.cumulative_reward(result['reward'])
 
 ###########
 # Run agent on an environment
 
-result = agent.run(env, test_iter)
+result = agent.run(task, test_iter)
 
 ###########
 # Analyse testing behaviour
 
-fname = 'run_probabilistic_categorization'
+fname = 'figures/run_probabilistic_categorization'
 
-analysis = Analysis(fname, env, agent)
+analysis = Analysis(fname, task, agent)
 
 analysis.cumulative_reward(result['reward'])
 

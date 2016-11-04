@@ -1,4 +1,3 @@
-import math
 import numpy as np
 from chainer import optimizers, Variable
 import chainer.functions as F
@@ -84,11 +83,11 @@ class Agent(object):
 
         return self.model.action(obs)
 
-    def run(self, env, niter):
+    def run(self, task, niter):
         """
-        Run agent on environment for niter iterations
+        Run agent on task for niter iterations
 
-        :param env: Environment
+        :param task: Cognitive task
         :param niter: Number of iterations
         :return: dictionary of results
         """
@@ -97,7 +96,7 @@ class Agent(object):
         result = Buffer(niter)
 
         # initialize environment and get first observation
-        obs = env.reset()
+        obs = task.reset()
 
         # reset agent's brain
         self.model.reset()
@@ -111,7 +110,7 @@ class Agent(object):
             action, pi, v, internal = self.act(obs)
 
             # get feedback from environment
-            obs, reward, terminal = env.step(action)
+            obs, reward, terminal = task.step(action)
 
             # add to results
             result.add('action',action,'policy',pi.data,'value',v.data,'reward',reward,'terminal',terminal)
@@ -151,11 +150,11 @@ class Advantage_Actor_Critic(Agent):
         # contribution of the entropy term
         self.beta = 1e-2
 
-    def learn(self, env, niter):
+    def learn(self, task, niter):
         """
-        Train agent on environment for niter iterations
+        Train agent on task for niter iterations
 
-        :param env: Environment
+        :param task: Cogntive task
         :param niter: Number of iterations
         :return: dictionary of results
         """
@@ -167,7 +166,7 @@ class Advantage_Actor_Critic(Agent):
         past = Buffer(self.t_max)
 
         # initialize environment and get first observation
-        obs = env.reset()
+        obs = task.reset()
 
         # reset agent's brain
         self.model.reset()
@@ -193,7 +192,7 @@ class Advantage_Actor_Critic(Agent):
             _entropy = self.entropy(pi)
 
             # get feedback from environment
-            obs, reward, terminal = env.step(action)
+            obs, reward, terminal = task.step(action)
 
             # add to results
             result.add('score_function',_score_function.data,'entropy',_entropy.data,

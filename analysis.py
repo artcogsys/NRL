@@ -23,7 +23,7 @@ class Analysis(object):
         plt.plot(t, np.cumsum(reward), 'k')
         plt.xlabel('Time')
         plt.ylabel('Cumulative reward')
-        plt.savefig('figures/' + self.fname + '_cumulative_reward.png')
+        plt.savefig(self.fname + '_cumulative_reward.png')
 
     def weight_matrix(self, W):
         """
@@ -36,7 +36,7 @@ class Analysis(object):
         plt.clf()
         plt.pcolor(W)
         plt.title('Weight matrix')
-        plt.savefig('figures/' + self.fname + '_weight_matrix.png')
+        plt.savefig(self.fname + '_weight_matrix.png')
 
     def functional_connectivity(self, x):
         """
@@ -51,7 +51,7 @@ class Analysis(object):
         plt.clf()
         plt.pcolor(M)
         plt.title('Functional connectivity')
-        plt.savefig('figures/' + self.fname + '_functional_connectivity.png')
+        plt.savefig(self.fname + '_functional_connectivity.png')
 
     def spike_rate(self, fname, neurons, terminal):
         """
