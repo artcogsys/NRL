@@ -7,6 +7,6 @@ the trained models and link them to observational data.
 Core functionality is provided by:
 * Environments: Implementation of various tasks
 * Agents: Implementation of agents that use particular reinforcement learning (RL) algorithms
-* Modelzoo: Implemenentation of recurrent neural networks; the 'brains' of our RL agents
+* Modelzoo: Implemenentation of custom layers and recurrent neural networks; the 'brains' of our RL agents
 * Analysis: Provides functionality for model analysis and visualization
 
