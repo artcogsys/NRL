@@ -4,17 +4,10 @@ import modelzoo
 import agents
 from analysis import Analysis
 
-# configuration files
-# time constant derivation
-# documentation 2x
-# derivation
-# code standard
-# configuration
-
 ###########
 # Parameter specification
 
-train_iter = 1*10**4 # number of training iterations
+train_iter = 2*10**4 # number of training iterations
 test_iter = 1*10**3 # number of test iterations
 
 ###########
@@ -42,9 +35,9 @@ result = agent.learn(env, train_iter)
 
 fname = 'learn_probabilistic_categorization'
 
-analysis = Analysis(env, agent)
+analysis = Analysis(fname, env, agent)
 
-analysis.cumulative_reward(fname, result['reward'])
+analysis.cumulative_reward(result['reward'])
 
 ###########
 # Run agent on an environment

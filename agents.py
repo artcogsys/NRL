@@ -8,6 +8,10 @@ from chainer import serializers
 # Buffer to store results
 
 class Buffer(object):
+    """
+    This buffer either stores numpy arrays or chainer variables. In the latter case, it creates a dictionary {1: .., 2: ...}
+    which stores the chainer variables using an index variable as key
+    """
 
     def __init__(self, n):
 
@@ -15,21 +19,23 @@ class Buffer(object):
         self.n = n
         self.data = {}
 
-    def add(self, key, value):
+    def add(self, *args):
         """
-        Add value to key
-        :param key: string
-        :param value: numpy scalar, numpy array or chainer Variable
-        :return:
+        Add key, value pairs where values are numpy scalar, numpy array or chainer Variable
         """
 
-        if self.idx == 0:
-            if isinstance(value, Variable):
-                self.data[key] = {}
-            else:
-                self.data[key] = np.zeros(np.hstack([self.n, value.size]), dtype=value.dtype)
+        for i in range(0,len(args),2):
 
-        self.data[key][self.idx] = value
+            key = args[i]
+            value = args[i+1]
+
+            if not self.data.has_key(key):
+                if isinstance(value, Variable):
+                    self.data[key] = {}
+                else:
+                    self.data[key] = np.zeros([self.n, value.size], dtype=value.dtype)
+
+            self.data[key][self.idx] = value
 
     def get(self, key, i):
         """
@@ -99,7 +105,7 @@ class Agent(object):
         # run agent on environment
         for t in xrange(niter):
 
-            result.add('observation', obs)
+            result.add('observation',obs)
 
             # generate action using actor model
             action, pi, v, internal = self.act(obs)
@@ -108,17 +114,14 @@ class Agent(object):
             obs, reward, terminal = env.step(action)
 
             # add to results
-            result.add('action', action)
-            result.add('policy', pi.data)
-            result.add('value', v.data)
-            for k in internal.keys():
-                result.add(k,internal[k])
-            result.add('reward', reward)
-            result.add('terminal', terminal)
-            result.increment()
+            result.add('action',action,'policy',pi.data,'value',v.data,'reward',reward,'terminal',terminal)
+            for key in internal.keys():
+                result.add(key,internal[key])
 
             if terminal:
                 self.model.reset()
+
+            result.increment()
 
         return result.data
 
@@ -178,7 +181,7 @@ class Advantage_Actor_Critic(Agent):
 
             self.model.unchain_backward()
 
-            result.add('observation', obs)
+            result.add('observation',obs)
 
             # generate action using actor model
             action, pi, v, internal = self.act(obs)
@@ -193,22 +196,15 @@ class Advantage_Actor_Critic(Agent):
             obs, reward, terminal = env.step(action)
 
             # add to results
-            result.add('score_function', _score_function.data)
-            result.add('entropy', _entropy.data)
-            result.add('value', v.data)
-            result.add('action', action)
-            result.add('policy', pi.data)
-            for k in internal.keys():
-                result.add(k, internal[k])
-            result.add('reward', reward)
-            result.add('terminal', terminal)
-            result.increment()
+            result.add('score_function',_score_function.data,'entropy',_entropy.data,
+                       'value',v.data,'action',action,'policy',pi.data,'reward',reward,'terminal',terminal)
+            for key in internal.keys():
+                result.add(key,internal[key])
 
             # add to past buffer
-            past.add('score_function', _score_function)
-            past.add('entropy', _entropy)
-            past.add('value', v)
-            past.add('reward', reward)
+            past.add('score_function',_score_function,'entropy',_entropy,'value',v,'reward',reward)
+
+            result.increment()
             past.increment()
 
             if terminal:
