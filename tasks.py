@@ -3,13 +3,13 @@ from chainer import Variable
 import chainer.functions as F
 
 ###
-# Base class for an environment
+# Base class for a task
 
-class Environment(object):
+class Task(object):
 
     def reset(self):
         """
-        Reset environment and return observation
+        Reset task and return observation
 
         Returns: observation
 
@@ -36,25 +36,33 @@ class Environment(object):
 
     def get_state(self):
         """
-        Returns: ground truth state of the environment
+        Returns: ground truth state of the task
         """
 
         return self.state
 
     def set_state(self, state):
         """
-        :param: state : sets ground truth state of the environment
+        :param: state : sets ground truth state of the task
         """
 
         self.state = state
 
     def loss(self, x, t):
+        """
+
+        Loss function in case of SupervisedAgent
+
+        :param x: predicted action
+        :param t: target action
+        :return: loss
+        """
         pass
 
 ###
 # Specific environments
 
-class ProbabilisticCategorization(Environment):
+class ProbabilisticCategorizationTask(Task):
     """
 
     Let odds be a vector determining the odds ratio for emitting a certain symbol x = i given state k = j:
@@ -82,7 +90,7 @@ class ProbabilisticCategorization(Environment):
 
         """
 
-        super(ProbabilisticCategorization, self).__init__()
+        super(ProbabilisticCategorizationTask, self).__init__()
 
         self.odds = np.array(odds)
 

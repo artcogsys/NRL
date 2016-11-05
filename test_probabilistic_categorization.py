@@ -13,7 +13,7 @@ test_iter = 1*10**3 # number of test iterations
 ###########
 # Environment specification
 
-task = tasks.ProbabilisticCategorization()
+task = tasks.ProbabilisticCategorizationTask()
 
 ###########
 # Model specification
