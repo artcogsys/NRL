@@ -1,13 +1,13 @@
 import os
 import tasks
-import modelzoo
+import models
 import agents
 from analysis import Analysis
 
 ###########
 # Parameter specification
 
-train_iter = 2*10**4 # number of training iterations
+train_iter = 1*10**4 # number of training iterations
 test_iter = 1*10**3 # number of test iterations
 
 ###########
@@ -18,12 +18,13 @@ task = tasks.ProbabilisticCategorization()
 ###########
 # Model specification
 
-model = modelzoo.RNN_Elman(task.ninput, 5, task.noutput)
+model = models.RNN_Elman(task.ninput, 5, task.noutput)
 
 ##########
 # Agent specification
 
-agent = agents.Advantage_Actor_Critic(model)
+#agent = agents.AACAgent(model)
+agent = agents.SupervisedAgent(model)
 
 ###########
 # Train agent on an environment

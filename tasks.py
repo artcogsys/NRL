@@ -1,9 +1,6 @@
-import math
 import numpy as np
-import sys
-import matplotlib.pyplot as plt
-import scipy
-from scipy.io import savemat
+from chainer import Variable
+import chainer.functions as F
 
 ###
 # Base class for an environment
@@ -27,7 +24,11 @@ class Environment(object):
         Args:
             action:
 
-        Returns: observation
+        Returns: observation, reward, terminal, target
+
+        Note:
+            target is used to train a model using a supervised agent. It depends on the task whether or
+            not it is available. The representation should be acceptable by the task's loss function
 
         """
 
@@ -46,6 +47,9 @@ class Environment(object):
         """
 
         self.state = state
+
+    def loss(self, x, t):
+        pass
 
 ###
 # Specific environments
@@ -98,15 +102,15 @@ class ProbabilisticCategorization(Environment):
     def reset(self):
         """
 
-        Returns: observation
+        Returns: observation and target
 
         """
 
-        self.state = np.random.randint(1, 3)  # 1 = left, 2 = right
+        self.state = np.int32(np.random.randint(1, 3))  # 1 = left, 2 = right
 
         obs = np.zeros([1, self.ninput], dtype='float32')
 
-        return obs
+        return obs, None
 
 
     def render(self):
@@ -143,6 +147,9 @@ class ProbabilisticCategorization(Environment):
 
             terminal = np.float32(1)
 
-            obs = self.reset()
+            obs,_ = self.reset()
 
-        return obs, reward, terminal
+        return obs, reward, terminal, None
+
+    def loss(self, x, t):
+        return F.softmax_cross_entropy(x, np.array([t]))

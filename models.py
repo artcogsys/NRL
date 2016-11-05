@@ -57,7 +57,7 @@ class Elman(ElmanBase):
     def set_state(self, h):
         assert isinstance(h, chainer.Variable)
         h_ = h
-        if self.xp == numpy:
+        if self.xp == np:
             h_.to_cpu()
         else:
             h_.to_gpu()

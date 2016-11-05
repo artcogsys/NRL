@@ -63,9 +63,6 @@ class Agent(object):
 
     def __init__(self, model, **kwargs):
 
-        # discounting factor
-        self.gamma = kwargs.get('gamma', 0.99)
-
         # the 'brain' of an agent
         self.model = model
 
@@ -96,7 +93,7 @@ class Agent(object):
         result = Buffer(niter)
 
         # initialize environment and get first observation
-        obs = task.reset()
+        obs, target = task.reset()
 
         # reset agent's brain
         self.model.reset()
@@ -110,7 +107,7 @@ class Agent(object):
             action, pi, v, internal = self.act(obs)
 
             # get feedback from environment
-            obs, reward, terminal = task.step(action)
+            obs, reward, terminal, target = task.step(action)
 
             # add to results
             result.add('action',action,'policy',pi.data,'value',v.data,'reward',reward,'terminal',terminal)
@@ -139,10 +136,13 @@ class Agent(object):
         serializers.load_npz('models/{0}.model'.format(name), self.model)
 
 
-class Advantage_Actor_Critic(Agent):
+class AACAgent(Agent):
 
     def __init__(self, model, **kwargs):
-        super(Advantage_Actor_Critic, self).__init__(model, **kwargs)
+        super(AACAgent, self).__init__(model, **kwargs)
+
+        # discounting factor
+        self.gamma = kwargs.get('gamma', 0.99)
 
         # maximal number of steps to accumulate information
         self.t_max = kwargs.get('t_max', 10)
@@ -166,7 +166,7 @@ class Advantage_Actor_Critic(Agent):
         past = Buffer(self.t_max)
 
         # initialize environment and get first observation
-        obs = task.reset()
+        obs, target = task.reset()
 
         # reset agent's brain
         self.model.reset()
@@ -192,7 +192,7 @@ class Advantage_Actor_Critic(Agent):
             _entropy = self.entropy(pi)
 
             # get feedback from environment
-            obs, reward, terminal = task.step(action)
+            obs, reward, terminal, target = task.step(action)
 
             # add to results
             result.add('score_function',_score_function.data,'entropy',_entropy.data,
@@ -282,3 +282,83 @@ class Advantage_Actor_Critic(Agent):
         logp = F.log_softmax(pi)
 
         return - F.sum(p * logp, axis=1)
+
+
+class SupervisedAgent(Agent):
+    def __init__(self, model, **kwargs):
+        super(SupervisedAgent, self).__init__(model, **kwargs)
+
+        # maximal number of steps to accumulate information
+        self.t_max = kwargs.get('t_max', 10)
+
+    def learn(self, task, niter):
+        """
+        Train agent on task for niter iterations
+
+        :param task: Cogntive task
+        :param niter: Number of iterations
+        :return: dictionary of results
+        """
+
+        loss = Variable(np.zeros((), 'float32'))
+
+        # initialize results buffer
+        result = Buffer(niter)
+
+        # initialize environment and get first observation
+        obs, target = task.reset()
+
+        # we can only learn supervised if the target is known
+        if not target:
+            raise NotImplementedError('cannot train supervised agent when target is unknown')
+
+        # reset agent's brain
+        self.model.reset()
+
+        # run agent on environment
+        counter = 0
+        for t in xrange(niter):
+
+            if np.mod(t, niter / 100) == 0:
+                print str(t) + '/' + str(niter)
+
+            self.model.unchain_backward()
+
+            result.add('observation', obs)
+
+            # generate action using actor model
+            action, pi, v, internal = self.act(obs)
+
+            # update loss term
+            loss += task.loss(pi, target)
+
+            # get feedback from environment
+            obs, reward, terminal, target = task.step(action)
+
+            # add to results
+            result.add('value', v.data, 'action', action, 'policy', pi.data, 'reward', reward, 'terminal', terminal)
+            for key in internal.keys():
+                result.add(key, internal[key])
+
+            result.increment()
+
+            if terminal:
+                self.model.reset()
+
+            # initiate learning based on accumulated information
+            if terminal or counter == (self.t_max - 1) or t == niter - 1:
+
+                self.optimizer.zero_grads()
+                loss.backward()
+                loss.unchain_backward()
+                self.optimizer.update()
+
+                counter = 0
+
+                loss = Variable(np.zeros((), 'float32'))
+
+            else:
+
+                counter += 1
+
+        return result.data
