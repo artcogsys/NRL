@@ -7,7 +7,7 @@ from analysis import Analysis
 ###########
 # Parameter specification
 
-train_iter = 1*10**4 # number of training iterations
+train_iter = 2*10**4 # number of training iterations
 test_iter = 1*10**3 # number of test iterations
 
 ###########
@@ -23,8 +23,7 @@ model = models.RNN_Elman(task.ninput, 5, task.noutput)
 ##########
 # Agent specification
 
-#agent = agents.AACAgent(model)
-agent = agents.SupervisedAgent(model)
+agent = agents.AACAgent(model)
 
 ###########
 # Train agent on an environment
