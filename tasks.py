@@ -81,6 +81,9 @@ class ProbabilisticCategorizationTask(Task):
 
     Note: vector of zeros indicates absence of evidence (starting state)
 
+    Note: a nicer way to generalize this to 2D input is to have the 2D input be a very noisy version of the underlying stimulus
+          this makes it an object categorization task. We then have one knob to turn (noise level)
+
     """
 
     def __init__(self, odds = [0.25, 0.75, 1.5, 2.5]):
