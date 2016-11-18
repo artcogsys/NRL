@@ -84,9 +84,12 @@ class ProbabilisticCategorizationTask(Task):
     Note: a nicer way to generalize this to 2D input is to have the 2D input be a very noisy version of the underlying stimulus
           this makes it an object categorization task. We then have one knob to turn (noise level)
 
+    Note: This code has now been generalized so it can also be used in supervised training. The parameter nsteps when not none indicates
+          how many steps are taken in each trial
+
     """
 
-    def __init__(self, odds = [0.25, 0.75, 1.5, 2.5]):
+    def __init__(self, odds = [0.25, 0.75, 1.5, 2.5], nsteps = None):
         """
 
         :param: odds : determines odds ratio
@@ -96,6 +99,12 @@ class ProbabilisticCategorizationTask(Task):
         super(ProbabilisticCategorizationTask, self).__init__()
 
         self.odds = np.array(odds)
+
+        # nr of steps taken in each trial (if specified)
+        self.nsteps = nsteps
+
+        # keep track of the iteration
+        self.iter = 1
 
         self.p = self.odds/float(np.sum(self.odds))
         self.q = (1.0/self.odds)/float(np.sum(1.0/self.odds))
@@ -113,7 +122,7 @@ class ProbabilisticCategorizationTask(Task):
     def reset(self):
         """
 
-        Returns: observation and target
+        Returns: observation and target value
 
         """
 
@@ -121,7 +130,7 @@ class ProbabilisticCategorizationTask(Task):
 
         obs = np.zeros([1, self.ninput], dtype='float32')
 
-        return obs, None
+        return obs, self.state
 
 
     def render(self):
@@ -130,11 +139,16 @@ class ProbabilisticCategorizationTask(Task):
 
 
     def step(self, action):
+        """
+
+        :param action:
+        :return: obs, reward, terminal, target
+        """
 
         # convert 1-hot encoding to discrete action
         action = np.argmax(action)
 
-        if action == 0:  # wait to get new evidence
+        if action == 0 or self.iter < self.nsteps:  # wait to get new evidence
 
             reward = self.rewards[0]
 
@@ -149,7 +163,13 @@ class ProbabilisticCategorizationTask(Task):
 
             terminal = np.float32(0)
 
+            target = self.state
+
+            self.iter += 1
+
         else:  # left or right was chosen
+
+            self.iter = 1
 
             if action == self.state:
                 reward = self.rewards[1]
@@ -158,9 +178,9 @@ class ProbabilisticCategorizationTask(Task):
 
             terminal = np.float32(1)
 
-            obs,_ = self.reset()
+            obs, target = self.reset()
 
-        return obs, reward, terminal, None
+        return obs, reward, terminal, target
 
     def loss(self, x, t):
         return F.softmax_cross_entropy(x, np.array([t]))
