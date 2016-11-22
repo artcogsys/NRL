@@ -23,7 +23,7 @@ model = models.RNN_Elman(task.ninput, 5, task.noutput)
 ##########
 # Agent specification
 
-agent = agents.AACAgent(model)
+agent = agents.AACAgent(model,clipping=1)
 
 ###########
 # Train agent on an environment

@@ -74,9 +74,9 @@ class Agent(object):
         self.optimizer.setup(self.model)
 
         # add gradient clipping
-        self.threshold = kwargs.get('threshold', None)
-        if self.threshold:
-            self.optimizer.add_hook(chainer.optimizer.GradientClipping(self.threshold))
+        self.clipping = kwargs.get('clipping', None)
+        if self.clipping:
+            self.optimizer.add_hook(chainer.optimizer.GradientClipping(self.clipping))
 
     def act(self, obs):
         """
