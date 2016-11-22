@@ -1,4 +1,5 @@
 import numpy as np
+import chainer
 from chainer import optimizers, Variable
 import chainer.functions as F
 from chainer import serializers
@@ -71,6 +72,11 @@ class Agent(object):
 
         # setup optimizer
         self.optimizer.setup(self.model)
+
+        # add gradient clipping
+        self.threshold = kwargs.get('threshold', None)
+        if self.threshold:
+            self.optimizer.add_hook(chainer.optimizer.GradientClipping(self.threshold))
 
     def act(self, obs):
         """
