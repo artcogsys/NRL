@@ -78,6 +78,11 @@ class Agent(object):
         if self.clipping:
             self.optimizer.add_hook(chainer.optimizer.GradientClipping(self.clipping))
 
+        # add gradient noise
+        self.grad_noise = kwargs.get('grad_noise', None)
+        if self.grad_noise:
+            self.optimizer.add_hook(chainer.optimizer.GradientNoise(self.grad_noise))
+
     def act(self, obs):
         """
         :param obs: observation

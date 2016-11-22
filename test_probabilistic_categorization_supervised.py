@@ -7,25 +7,27 @@ from analysis import Analysis
 ###########
 # Parameter specification
 
-train_iter = 1*10**4 # number of training iterations
+train_iter = 2*10**4 # number of training iterations
 test_iter = 1*10**3 # number of test iterations
+
+nhidden = 5
 
 ###########
 # Environment specification
 
 # note that nsteps determines length of a trial
 # must be sufficient for evidence integration
-task = tasks.ProbabilisticCategorizationTask(nsteps=5)
+task = tasks.ProbabilisticCategorizationTask(nsteps=6)
 
 ###########
 # Model specification
 
-model = models.RNN_Elman(task.ninput, 5, task.noutput)
+model = models.RNN_Elman(task.ninput, nhidden, task.noutput)
 
 ##########
 # Agent specification
 
-agent = agents.SupervisedAgent(model)
+agent = agents.SupervisedAgent(model, clipping=5)
 
 ###########
 # Train agent on an environment

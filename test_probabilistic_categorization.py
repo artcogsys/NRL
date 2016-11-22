@@ -7,8 +7,10 @@ from analysis import Analysis
 ###########
 # Parameter specification
 
-train_iter = 2*10**4 # number of training iterations
-test_iter = 1*10**3 # number of test iterations
+train_iter = 2*10**4  # number of training iterations
+test_iter = 1*10**3  # number of test iterations
+
+nhidden = 5  # number of hidden units
 
 ###########
 # Environment specification
@@ -18,12 +20,13 @@ task = tasks.ProbabilisticCategorizationTask()
 ###########
 # Model specification
 
-model = models.RNN_Elman(task.ninput, 5, task.noutput)
+model = models.RNN_Elman(task.ninput, nhidden, task.noutput)
 
 ##########
 # Agent specification
 
-agent = agents.AACAgent(model,clipping=1)
+agent = agents.AACAgent(model,clipping=5)
+
 
 ###########
 # Train agent on an environment
