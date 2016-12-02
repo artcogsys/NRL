@@ -29,7 +29,7 @@ class ElmanBase(link.Chain):
             U=linear.Linear(n_inputs, n_units,
                             initialW=initU, initial_bias=bias_init),
             W=linear.Linear(n_units, n_units,
-                            initialW=initW, initial_bias=bias_init),
+                            initialW=initW, initial_bias=bias_init, nobias=True),
         )
 
 class Elman(ElmanBase):
