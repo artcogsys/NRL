@@ -70,7 +70,9 @@ class Elman(ElmanBase):
         z = self.U(x)
         if self.h is not None:
             z += self.W(self.h)
+
         self.h = relu.relu(z)
+
         return self.h
 
 ###
