@@ -189,8 +189,6 @@ class AACAgent(Agent):
             if np.mod(t,niter/100) == 0:
                 print str(t) + '/' + str(niter)
 
-            self.model.unchain_backward()
-
             result.add('observation',obs)
 
             # generate action using actor model
@@ -222,6 +220,8 @@ class AACAgent(Agent):
 
             # initiate learning based on accumulated information
             if terminal or counter == (self.t_max - 1) or t == niter-1:
+
+                #self.model.unchain_backward()
 
                 if terminal:
                     R = 0
@@ -261,11 +261,17 @@ class AACAgent(Agent):
                 # Compute total loss; 0.5 supposedly used by Mnih et al
                 loss = pi_loss + 0.5 * v_loss
 
-                # Compute gradients
-                self.model.zerograds()
-                loss.backward()
+                # # Compute gradients
+                # self.model.zerograds()
+                # loss.backward()
+                #
+                # # update the shared model
+                # self.optimizer.update()
 
-                # update the shared model
+                # this default option also works instead of commented code
+                self.optimizer.zero_grads()
+                loss.backward()
+                loss.unchain_backward()
                 self.optimizer.update()
 
                 # reset buffer
